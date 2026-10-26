@@ -1,67 +1,22 @@
-
 (function(){
-  var pages = ['accueil','expertise','offres','suivi','equipe','labo','mentions','confidentialite'];
-  var menuBtn = document.getElementById('menuBtn');
-  var navLinks = document.getElementById('navLinks');
-
-  function closeMenu(){ navLinks.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); }
-  menuBtn.addEventListener('click', function(){
-    var open = navLinks.classList.toggle('open');
-    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-
   var CURRENT = document.body.getAttribute('data-page') || 'accueil';
-  var URLS = {"accueil": "/", "expertise": "/expertise/", "offres": "/offres/", "suivi": "/suivi/", "equipe": "/equipe/", "labo": "/labo/", "mentions": "/mentions-legales/", "confidentialite": "/confidentialite/"};
-  // anciens liens en #page : redirection vers la vraie page
-  function oldHash(){ var h = location.hash.replace('#',''); if (h && URLS[h] && h !== CURRENT && h !== 'accueil') location.replace(URLS[h]); }
-  oldHash(); window.addEventListener('hashchange', oldHash);
-  function showPage(name, scrollTarget){
-    if (pages.indexOf(name) === -1) name = 'accueil';
-    name = CURRENT;
-    document.querySelectorAll('.nav-links > a:not(.nav-cta)').forEach(function(a){
-      a.classList.toggle('current', a.getAttribute('data-page') === name);
-    });
-    closeMenu();
-    if (window.reflektLab) window.reflektLab.onPage(name);
-    if (scrollTarget) {
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          var el = document.getElementById(scrollTarget);
-          if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
-        });
-      });
-    } else {
-      window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
-    }
-    revealVisible();
-  }
+  var URLS = {"accueil": "/", "expertise": "/expertise/", "offres": "/offres/", "suivi": "/suivi/", "equipe": "/equipe/", "labo": "/labo/", "questions": "/questions/", "mentions": "/mentions-legales/", "confidentialite": "/confidentialite/"};
+  // anciens liens du site une-page (reflektweb.com/#offres) -> nouvelle adresse
+  var h = (location.hash || '').replace('#','');
+  if (CURRENT === 'accueil' && URLS[h] && h !== 'accueil') { location.replace(URLS[h]); return; }
+  window.addEventListener('hashchange', function(){ var k = location.hash.replace('#',''); if (URLS[k] && k !== 'accueil' && k !== CURRENT) location.href = URLS[k]; });
 
-  var pendingScroll = null;
+  var menuBtn = document.getElementById('menuBtn'), navLinks = document.getElementById('navLinks');
+  function closeMenu(){ navLinks.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); }
+  menuBtn.addEventListener('click', function(){ var open = navLinks.classList.toggle('open'); menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+  navLinks.addEventListener('click', function(e){ if (e.target.closest('a')) closeMenu(); });
+
+  // Liens vers une section de la même page : défilement doux
   document.addEventListener('click', function(e){
-    var el = e.target.closest('[data-page]');
-    if (!el) return;
-    var pg = el.getAttribute('data-page');
-    if (pg !== CURRENT) { if (!el.getAttribute('href')) { e.preventDefault(); location.href = URLS[pg] || '/'; } return; }
-    e.preventDefault();
-    var name = el.getAttribute('data-page');
-    var scrollTarget = el.getAttribute('data-scroll');
-    var offer = el.getAttribute('data-offer');
-    if (offer) pickOffer(offer, currentPage());
-    var already = document.getElementById('page-' + name) && document.getElementById('page-' + name).classList.contains('active');
-    if (already) {
-      if (scrollTarget) document.getElementById(scrollTarget).scrollIntoView({behavior:'smooth', block:'start'});
-      else window.scrollTo({top:0, behavior:'smooth'});
-      closeMenu();
-      return;
-    }
-    location.href = URLS[name] || '/';
+    var a = e.target.closest('a[href^="#"]'); if (!a) return;
+    var el = document.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
+    e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); history.replaceState(null, '', a.getAttribute('href'));
   });
-
-
-
-  function currentPage(){
-    return CURRENT;
-  }
 
   // Offre choisie : pré-remplit le formulaire et garde la trace du clic pour le cockpit
   var OFFERS = {
@@ -71,7 +26,7 @@
     pilotage: {label: 'Suivi Pilotage', price: '89 € HT/mois'},
     croissance: {label: 'Suivi Croissance', price: '179 € HT/mois'}
   };
-  var PAGE_NAMES = {accueil: "l'accueil", expertise: 'la page Expertise', offres: 'la page Offres', suivi: 'la page Suivi', equipe: "la page L'équipe", labo: 'la page Labo'};
+  var PAGE_NAMES = {accueil: "l'accueil", expertise: 'la page Expertise', offres: 'la page Offres', suivi: 'la page Suivi', equipe: "la page L'équipe", labo: 'la page Labo', questions: 'la page Questions'};
   function pickOffer(key, page){
     var o = OFFERS[key]; if (!o) return;
     var sel = document.getElementById('offerSelect'); if (!sel) return;
@@ -82,9 +37,15 @@
     var need = document.querySelector('#contactForm select[name="need"]');
     if (o.need && need && !need.value) need.value = o.need;
     var note = document.getElementById('offerPicked');
-    note.innerHTML = 'Vous avez choisi l\u2019offre <b>' + o.label + '</b> (' + o.price + ') sur ' + (PAGE_NAMES[page] || 'le site') + '. Vous pouvez la modifier ci-dessous.';
+    note.innerHTML = 'Vous avez choisi l’offre <b>' + o.label + '</b> (' + o.price + ') sur ' + (PAGE_NAMES[page] || 'le site') + '. Vous pouvez la modifier ci-dessous.';
     note.hidden = false;
     sel.classList.remove('just-filled'); void sel.offsetWidth; sel.classList.add('just-filled');
+  }
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('offre')) {
+    pickOffer(qs.get('offre'), qs.get('depuis') || 'accueil');
+    history.replaceState(null, '', '/' + location.hash);
+    var c = document.getElementById('contact'); if (c) setTimeout(function(){ c.scrollIntoView({block:'start'}); }, 60);
   }
   document.addEventListener('change', function(e){
     if (!e.target || e.target.id !== 'offerSelect') return;
@@ -93,76 +54,57 @@
     e.target.classList.remove('just-filled');
   });
 
-  // Animated counters
-  var animatedOnce = false;
-  function animateCounters(){
-    if (animatedOnce) return;
-    var hours = document.getElementById('metricHours');
-    var contactNum = document.getElementById('metricContact');
+  // Compteurs animés
+  (function(){
+    var hours = document.getElementById('metricHours'), contactNum = document.getElementById('metricContact');
     if (!hours) return;
-    animatedOnce = true;
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function run(el, target, suffix){
+      if (!el) return;
       if (reduced) { el.textContent = target + suffix; return; }
       var start = performance.now(), duration = 1200;
-      function tick(now){
-        var progress = Math.min((now-start)/duration, 1);
-        var eased = 1 - Math.pow(1-progress, 3);
-        el.textContent = Math.round(target*eased) + suffix;
-        if (progress < 1) requestAnimationFrame(tick);
-      }
+      function tick(now){ var p = Math.min((now-start)/duration, 1), e = 1 - Math.pow(1-p, 3); el.textContent = Math.round(target*e) + suffix; if (p < 1) requestAnimationFrame(tick); }
       requestAnimationFrame(tick);
     }
-    run(hours, 24, '/7');
-    run(contactNum, 1, '');
-  }
+    run(hours, 24, '/7'); run(contactNum, 1, '');
+  })();
 
-  function revealVisible(){ animateCounters(); }
-
-  // Formulaire de contact → Robot Formulaires Reflekt (Google Apps Script)
-  // Colle ici l'adresse « Application Web » du robot (elle finit par /exec) :
-  var FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxekLYPBZtFZ1lI03m9l45K2-Qr-VQzuf0XVnGCCzuv5eSt0GgyUZZDmJb9rUB29zpV0w/exec';
-  var SITE_ID = 'reflektweb.com';
-  var formLoadedAt = Date.now();
+  // Formulaire de contact -> robot Formulaires Reflekt (Google Apps Script)
   var form = document.getElementById('contactForm');
   if (form) {
-  var formError = document.getElementById('formError');
-  function showFormError(msg){ formError.textContent = msg; formError.hidden = false; }
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    formError.hidden = true;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    var btn = form.querySelector('button[type="submit"]');
-    var fallback = "L'envoi n'a pas abouti. Écrivez-nous directement à bonjour@reflektweb.com ou appelez le 06 95 24 23 98.";
-    if (FORM_ENDPOINT.indexOf('https://') !== 0) { showFormError(fallback); return; }
-    var fd = new FormData(form);
-    var o = OFFERS[fd.get('offer')];
-    if (o) fd.set('offer', o.label + ' (' + o.price + ')');
-    var data = new URLSearchParams(fd);
-    data.append('site', SITE_ID);
-    data.append('t', String(formLoadedAt));
-    btn.disabled = true; var label = btn.innerHTML; btn.innerHTML = 'Envoi en cours…';
-    fetch(FORM_ENDPOINT, { method: 'POST', body: data })
-      .then(function(r){ return r.json(); })
-      .then(function(res){
-        if (!res || !res.ok) {
-          btn.disabled = false; btn.innerHTML = label;
-          showFormError(res && res.code === 'email_invalide' ? "Votre adresse e-mail semble incorrecte. Pouvez-vous la vérifier ?" : fallback);
-          return;
-        }
-        document.getElementById('contactFormWrap').innerHTML = '<div class="success"><span>&#10003;</span><h3>Merci, votre message est parti.</h3><p>' + (o ? 'Votre demande concerne l\u2019offre <b>' + o.label + '</b>. ' : '') + 'Nous revenons vers vous rapidement avec un regard concret sur votre projet.</p><button id="resetForm">Envoyer une autre demande</button></div>';
-      })
-      .catch(function(){ btn.disabled = false; btn.innerHTML = label; showFormError(fallback); });
-  });
-  document.getElementById('contactFormWrap').addEventListener('click', function(e){
-    if (e.target && e.target.id === 'resetForm') location.reload();
-  });
+    var FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxekLYPBZtFZ1lI03m9l45K2-Qr-VQzuf0XVnGCCzuv5eSt0GgyUZZDmJb9rUB29zpV0w/exec';
+    var SITE_ID = 'reflektweb.com';
+    var formLoadedAt = Date.now();
+    var formError = document.getElementById('formError');
+    function showFormError(msg){ formError.textContent = msg; formError.hidden = false; }
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      formError.hidden = true;
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      var btn = form.querySelector('button[type="submit"]');
+      var fallback = "L'envoi n'a pas abouti. Écrivez-nous directement à bonjour@reflektweb.com ou appelez le 06 95 24 23 98.";
+      if (FORM_ENDPOINT.indexOf('https://') !== 0) { showFormError(fallback); return; }
+      var fd = new FormData(form);
+      var o = OFFERS[fd.get('offer')];
+      if (o) fd.set('offer', o.label + ' (' + o.price + ')');
+      var data = new URLSearchParams(fd);
+      data.append('site', SITE_ID);
+      data.append('t', String(formLoadedAt));
+      btn.disabled = true; var label = btn.innerHTML; btn.innerHTML = 'Envoi en cours…';
+      fetch(FORM_ENDPOINT, { method: 'POST', body: data })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          if (!res || !res.ok) {
+            btn.disabled = false; btn.innerHTML = label;
+            showFormError(res && res.code === 'email_invalide' ? "Votre adresse e-mail semble incorrecte. Pouvez-vous la vérifier ?" : fallback);
+            return;
+          }
+          document.getElementById('contactFormWrap').innerHTML = '<div class="success"><span>&#10003;</span><h3>Merci, votre message est parti.</h3><p>' + (o ? 'Votre demande concerne l’offre <b>' + o.label + '</b>. ' : '') + 'Nous revenons vers vous rapidement avec un regard concret sur votre projet.</p><button id="resetForm">Envoyer une autre demande</button></div>';
+        })
+        .catch(function(){ btn.disabled = false; btn.innerHTML = label; showFormError(fallback); });
+    });
+    document.getElementById('contactFormWrap').addEventListener('click', function(e){ if (e.target && e.target.id === 'resetForm') location.reload(); });
   }
-
-  // Init from hash
-  showPage(CURRENT, location.hash === '#contact' ? 'contact' : null);
-  (function(){ try { var q = new URLSearchParams(location.search); if (q.get('offre')) pickOffer(q.get('offre'), q.get('depuis') || 'accueil'); } catch(e){} })();
-  setTimeout(revealVisible, 50);
 })();
 
 
@@ -387,5 +329,7 @@
     active = name === 'labo';
     if (active){ loadThree(start); requestAnimationFrame(function(){ setMode(); onScroll(); }); }
   }};
-  window.reflektLab.onPage(document.body.getAttribute('data-page') || 'accueil');
+  window.reflektLab.onPage((location.hash || '').replace('#', '') || 'accueil');
 })();
+
+if (window.reflektLab) window.reflektLab.onPage(document.body.getAttribute('data-page'));
