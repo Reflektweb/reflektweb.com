@@ -509,6 +509,31 @@ html{scroll-behavior:auto}
 .lab-plate,.lab-steps li{transition:none}
 }
 
+
+/* ===== Animations Reflekt : apparition au défilement et survols ===== */
+.scroll-reveal>*{animation:none}
+.rv-wait{opacity:0;transform:translateY(26px)}
+.rv-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1)}
+.nav-links>a:not(.nav-cta){position:relative}
+.nav-links>a:not(.nav-cta)::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;background:var(--coral);transform:scaleX(0);transform-origin:left;transition:transform .3s ease}
+.nav-links>a:not(.nav-cta):hover{opacity:1}
+.nav-links>a:not(.nav-cta):hover::after,.nav-links>a.current::after{transform:scaleX(1)}
+.hero-card{animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.button.primary,.button.coral{position:relative;overflow:hidden}
+.button.primary::before,.button.coral::before{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-20deg);transition:left .7s ease}
+.button.primary:hover::before,.button.coral:hover::before{left:130%}
+.mini-chart i{transform-origin:bottom;transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.mini-chart.rv-bars i{transform:scaleY(0)}
+.mini-chart.rv-bars.go i{transform:scaleY(1)}
+.mini-chart.rv-bars.go i:nth-child(2){transition-delay:.08s}.mini-chart.rv-bars.go i:nth-child(3){transition-delay:.16s}.mini-chart.rv-bars.go i:nth-child(4){transition-delay:.24s}.mini-chart.rv-bars.go i:nth-child(5){transition-delay:.32s}
+.pricing-card,.follow-card,.follow-mini article,.founder-card{transition:transform .35s ease,box-shadow .35s ease}
+.offer-packages .pricing-card.featured{transform:none}
+.offer-packages .pricing-card:hover,.follow-card:hover,.follow-mini article:hover,.founder-card:hover{transform:translateY(-6px);box-shadow:0 22px 50px -26px rgba(7,27,60,.35)}
+.faq-item p{animation:faqIn .35s ease}
+@keyframes faqIn{from{opacity:0;transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){.rv-wait{opacity:1!important;transform:none!important}.hero-card,.faq-item p{animation:none!important}.mini-chart.rv-bars i{transform:none!important}}
+
 .nav-links>a.current{opacity:.4}
 [hidden]{display:none!important}
 img{max-width:100%}

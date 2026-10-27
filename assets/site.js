@@ -333,3 +333,37 @@
 })();
 
 if (window.reflektLab) window.reflektLab.onPage(document.body.getAttribute('data-page'));
+
+
+/* ===== Animations Reflekt ===== */
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SEL = '.statement>*, .section-head>*, .service-card, .proof-main>*, .metric, .home-paths-head>*, .path-grid>a, .offer-copy>*, .offer-group-head>*, .pricing-card, .follow-mini article, .follow-card, .cmp-wrap, .follow-details .shell>*, .expertise-list article, .process-band li, .inner-cta>*, .offer-reassurance .shell>*, .founder-card, .team-belief-inner>*, .team-values article, .team-cta .shell>*, .faq-group, .lab-demo-head>*, .lab-rules article, .contact-grid>*';
+  var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(!e.isIntersecting) return; var el=e.target; io.unobserve(el);
+      if(el.classList.contains('rv-bars')){ el.classList.add('go'); return; }
+      el.classList.add('rv-in'); el.classList.remove('rv-wait'); });
+  }, {rootMargin:'0px 0px -8% 0px', threshold:0.08}) : null;
+  function scan(){
+    if(reduced || !io) return;
+    var page = document.querySelector('.page.active') || document;
+    var vh = window.innerHeight;
+    var groups = new Map();
+    page.querySelectorAll(SEL).forEach(function(el){
+      if(el.dataset.rv) return; el.dataset.rv = '1';
+      var r = el.getBoundingClientRect();
+      if(r.top < vh * 0.92) return;                 /* déjà visible au chargement : on ne cache rien */
+      var parent = el.parentElement, i = groups.get(parent) || 0; groups.set(parent, i + 1);
+      el.style.transitionDelay = Math.min(i, 5) * 80 + 'ms';
+      el.classList.add('rv-wait'); io.observe(el);
+    });
+    page.querySelectorAll('.mini-chart').forEach(function(c){
+      if(c.dataset.rv) return; c.dataset.rv='1'; c.classList.add('rv-bars'); io.observe(c);
+    });
+  }
+  window.addEventListener('hashchange', function(){ setTimeout(scan, 60); });
+  document.addEventListener('click', function(e){ if(e.target.closest('[data-page],a[href]')) setTimeout(scan, 120); });
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
+  window.addEventListener('load', scan);
+})();
+
