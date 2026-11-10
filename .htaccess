@@ -1,0 +1,36 @@
+# Réglages du serveur pour reflektweb.com (hébergement OVH, Apache)
+
+# Page d'erreur 404 avec le design du site
+ErrorDocument 404 /404.html
+
+# Bon format pour l'icône du site (logo dans l'onglet)
+AddType image/x-icon .ico
+
+# Pas de liste des fichiers si un dossier n'a pas de page
+Options -Indexes
+
+RewriteEngine On
+
+# Toujours en HTTPS
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://reflektweb.com/$1 [R=301,L]
+
+# Une seule adresse : reflektweb.com sans « www »
+RewriteCond %{HTTP_HOST} ^www\.reflektweb\.com$ [NC]
+RewriteRule ^(.*)$ https://reflektweb.com/$1 [R=301,L]
+
+# Fichiers privés jamais servis
+<FilesMatch "^(README\.md|\.gitignore)$">
+  Require all denied
+</FilesMatch>
+
+# Mise en cache des images, styles et scripts (site plus rapide pour les visiteurs qui reviennent)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
