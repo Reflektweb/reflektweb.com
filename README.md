@@ -3,7 +3,7 @@
 Site vitrine de l'agence Reflekt (Célestin et Victor) : création de sites internet, visibilité Google et suivi mensuel.
 Site statique en HTML, CSS et JavaScript, sans outil de construction : les fichiers se déposent tels quels chez l'hébergeur.
 
-Version du 28/10/2026 (v37).
+Version du 10/11/2026 (v52).
 
 ## Contenu du dossier
 
@@ -19,6 +19,7 @@ Version du 28/10/2026 (v37).
 | `sitemap.xml` | La liste des pages, à déclarer dans Google Search Console |
 | `robots.txt` | Les consignes pour les robots de Google |
 | `.gitignore` | Les fichiers que GitHub doit ignorer |
+| `.htaccess` | Les réglages du serveur OVH : HTTPS forcé, adresse sans « www », page 404, mise en cache |
 
 ## Mettre à jour le site
 
@@ -28,7 +29,6 @@ Version du 28/10/2026 (v37).
 
 ## Avant la mise en ligne
 
-- Compléter les mentions légales une fois la SAS créée (raison sociale, SIREN, siège, nom de l'hébergeur).
 - Déclarer le site et `sitemap.xml` dans Google Search Console.
 
 ## Sécurité

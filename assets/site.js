@@ -22,9 +22,12 @@
   var OFFERS = {
     essentiel: {label: 'Site Essentiel', price: '990 € HT', need: 'Créer mon site'},
     signature: {label: 'Site Signature', price: 'sur devis', need: 'Créer mon site'},
-    technique: {label: 'Suivi Technique', price: '39 € HT/mois'},
-    pilotage: {label: 'Suivi Pilotage', price: '89 € HT/mois'},
-    croissance: {label: 'Suivi Croissance', price: '179 € HT/mois'}
+    technique: {label: 'Suivi Technique', price: '30 €/mois en annuel ou 39 € HT/mois'},
+    pilotage: {label: 'Suivi Pilotage', price: '75 €/mois en annuel ou 89 € HT/mois'},
+    croissance: {label: 'Suivi Croissance', price: '150 €/mois en annuel ou 179 € HT/mois'},
+    diagnostic: {label: 'Diagnostic gratuit de visibilité', price: 'gratuit', need: 'Diagnostic gratuit de ma visibilité', force: true,
+      note: 'Vous demandez un <b>diagnostic gratuit de votre visibilité</b> : nous comparons votre présence sur Google à celle de vos concurrents, sans engagement.',
+      placeholder: 'Votre métier, votre ville et l\u2019adresse de votre site si vous en avez un.'}
   };
   var PAGE_NAMES = {accueil: "l'accueil", expertise: 'la page Expertise', offres: 'la page Offres', suivi: 'la page Suivi', equipe: "la page L'équipe", labo: 'la page Labo', questions: 'la page Questions'};
   function pickOffer(key, page){
@@ -35,9 +38,11 @@
     document.getElementById('offerClickedPage').value = page;
     document.getElementById('offerSource').value = 'clic-offre';
     var need = document.querySelector('#contactForm select[name="need"]');
-    if (o.need && need && !need.value) need.value = o.need;
+    if (o.need && need && (o.force || !need.value)) need.value = o.need;
+    var msg = document.querySelector('#contactForm textarea[name="message"]');
+    if (msg && o.placeholder) msg.placeholder = o.placeholder;
     var note = document.getElementById('offerPicked');
-    note.innerHTML = 'Vous avez choisi l’offre <b>' + o.label + '</b> (' + o.price + ') sur ' + (PAGE_NAMES[page] || 'le site') + '. Vous pouvez la modifier ci-dessous.';
+    note.innerHTML = o.note || ('Vous avez choisi l\u2019offre <b>' + o.label + '</b> (' + o.price + ') sur ' + (PAGE_NAMES[page] || 'le site') + '. Vous pouvez la modifier ci-dessous.');
     note.hidden = false;
     sel.classList.remove('just-filled'); void sel.offsetWidth; sel.classList.add('just-filled');
   }
@@ -340,10 +345,14 @@ if (window.reflektLab) window.reflektLab.onPage(document.body.getAttribute('data
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SEL = '.statement>*, .section-head>*, .service-card, .proof-main>*, .metric, .home-paths-head>*, .path-grid>a, .offer-copy>*, .offer-group-head>*, .pricing-card, .follow-mini article, .follow-card, .cmp-wrap, .follow-details .shell>*, .expertise-list article, .process-band li, .inner-cta>*, .offer-reassurance .shell>*, .founder-card, .team-belief-inner>*, .team-values article, .team-cta .shell>*, .faq-group, .lab-demo-head>*, .lab-rules article, .contact-grid>*';
   var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(es){
-    es.forEach(function(e){ if(!e.isIntersecting) return; var el=e.target; io.unobserve(el);
-      if(el.classList.contains('rv-bars')){ el.classList.add('go'); return; }
+    es.forEach(function(e){ var el=e.target, bars=el.classList.contains('rv-bars');
+      if(!e.isIntersecting){                       /* sorti de l'écran : on le remet en attente pour rejouer l'animation au prochain passage */
+        if(bars) el.classList.remove('go'); else { el.classList.remove('rv-in'); el.classList.add('rv-wait'); }
+        return; }
+      if(e.intersectionRatio < 0.08) return;
+      if(bars){ el.classList.add('go'); return; }
       el.classList.add('rv-in'); el.classList.remove('rv-wait'); });
-  }, {rootMargin:'0px 0px -8% 0px', threshold:0.08}) : null;
+  }, {threshold:[0, 0.08]}) : null;
   function scan(){
     if(reduced || !io) return;
     var page = document.querySelector('.page.active') || document;
@@ -352,10 +361,10 @@ if (window.reflektLab) window.reflektLab.onPage(document.body.getAttribute('data
     page.querySelectorAll(SEL).forEach(function(el){
       if(el.dataset.rv) return; el.dataset.rv = '1';
       var r = el.getBoundingClientRect();
-      if(r.top < vh * 0.92) return;                 /* déjà visible au chargement : on ne cache rien */
       var parent = el.parentElement, i = groups.get(parent) || 0; groups.set(parent, i + 1);
       el.style.transitionDelay = Math.min(i, 5) * 80 + 'ms';
-      el.classList.add('rv-wait'); io.observe(el);
+      if(r.top >= vh * 0.92) el.classList.add('rv-wait');   /* déjà visible au chargement : on ne cache rien */
+      io.observe(el);
     });
     page.querySelectorAll('.mini-chart').forEach(function(c){
       if(c.dataset.rv) return; c.dataset.rv='1'; c.classList.add('rv-bars'); io.observe(c);
