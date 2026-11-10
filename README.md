@@ -3,7 +3,7 @@
 Site vitrine de l'agence Reflekt (Célestin et Victor) : création de sites internet, visibilité Google et suivi mensuel.
 Site statique en HTML, CSS et JavaScript, sans outil de construction : les fichiers se déposent tels quels chez l'hébergeur.
 
-Version du 10/11/2026 (v58).
+Version du 10/11/2026 (v59).
 
 ## Contenu du dossier
 
