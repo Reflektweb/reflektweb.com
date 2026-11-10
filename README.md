@@ -3,7 +3,7 @@
 Site vitrine de l'agence Reflekt (Célestin et Victor) : création de sites internet, visibilité Google et suivi mensuel.
 Site statique en HTML, CSS et JavaScript, sans outil de construction : les fichiers se déposent tels quels chez l'hébergeur.
 
-Version du 10/11/2026 (v53).
+Version du 10/11/2026 (v54).
 
 ## Contenu du dossier
 
@@ -17,7 +17,7 @@ Version du 10/11/2026 (v53).
 | `assets/site.js` | Menu, formulaire de contact, Labo et animations |
 | `assets/img/` | Les images |
 | `sitemap.xml` | La liste des pages, à déclarer dans Google Search Console |
-| `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-512.png` | Le logo Reflekt affiché dans l'onglet du navigateur, sur l'écran d'accueil des téléphones et dans Google |
+| `favicon.ico`, `favicon-32.png`, `favicon-48.png`, `favicon-192.png`, `apple-touch-icon.png`, `icon-512.png` | Le logo Reflekt affiché dans l'onglet du navigateur, sur l'écran d'accueil des téléphones et dans Google |
 | `robots.txt` | Les consignes pour les robots de Google |
 | `.gitignore` | Les fichiers que GitHub doit ignorer |
 | `.htaccess` | Les réglages du serveur OVH : HTTPS forcé, adresse sans « www », page 404, mise en cache |
@@ -25,7 +25,7 @@ Version du 10/11/2026 (v53).
 ## Mettre à jour le site
 
 1. Les modifications se font dans l'aperçu du site, puis un nouveau zip est généré.
-2. Sur GitHub, remplacer les anciens fichiers par le contenu du zip (pas le zip lui-même), puis valider.
+2. Sur GitHub, remplacer les anciens fichiers par le contenu du zip (pas le zip lui-même), puis valider. Attention : le fichier caché `.htaccess` ne part pas en glisser-déposer ; s'il change, le recréer avec « Add file → Create new file ».
 3. L'hébergeur publie la nouvelle version.
 
 ## Avant la mise en ligne
