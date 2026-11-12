@@ -36,3 +36,4 @@ Version du 12/11/2026 (v64).
 ## Sécurité
 
 Aucun mot de passe, jeton ou clé d'accès ne doit être ajouté dans ce dépôt.
+
